@@ -1,0 +1,16 @@
+title = "clientroom"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Test fixtures and documentation use obviously fake values."
+paths = [
+  '''tests/.*\.ts''',
+  '''web/src/.*\.tsx?''',
+  '''docs/.*\.md''',
+  '''\.env\.example''',
+]
+regexes = [
+  '''dev-only-secret-do-not-use-in-production''',
+]

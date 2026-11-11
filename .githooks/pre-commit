@@ -1,0 +1,29 @@
+#!/bin/sh
+set -u
+
+ROOT="$(git rev-parse --show-toplevel)" || exit 1
+
+# Layer 1: gitleaks (secret scanning)
+if ! command -v gitleaks >/dev/null 2>&1; then
+    echo "pre-commit: gitleaks not installed on PATH, commit blocked." >&2
+    exit 1
+fi
+
+STATUS=0
+gitleaks protect --staged --redact --source "$ROOT" || STATUS=$?
+
+if [ "$STATUS" -ne 0 ]; then
+    echo "pre-commit: staged secret scan failed, commit blocked." >&2
+    echo "Resolve scanner errors or remove staged secrets, then retry." >&2
+    exit 1
+fi
+
+# Layer 2: git-secrets (AWS Labs - additional pattern matching)
+if command -v git-secrets >/dev/null 2>&1; then
+    git secrets --pre_commit_hook -- "$@" || {
+        echo "pre-commit: git-secrets scan failed, commit blocked." >&2
+        exit 1
+    }
+fi
+
+exit 0
