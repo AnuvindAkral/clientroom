@@ -311,7 +311,7 @@ async function main() {
 
   const later = await call('/api/me', { headers: jsonHeaders(cookie) });
   const profile = JSON.stringify(later.json ?? {});
-  const prefix = later.json?.user?.credential?.prefix ?? later.json?.credential?.prefix;
+  const prefix = later.json?.user?.mcp?.prefix;
   check(
     'C1 later reads show only a prefix',
     typeof prefix === 'string' && prefix.length < token.length && !profile.includes(token),

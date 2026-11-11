@@ -6,6 +6,9 @@ import { logger } from '../lib/logger.js';
 export function requestContext(req: Request, res: Response, next: NextFunction): void {
   req.requestId = randomUUID();
   res.setHeader('X-Request-Id', req.requestId);
+  // Capture the path before routing: a mounted router rewrites req.url, which
+  // would log "/auth/login" for "/api/auth/login" and "/" for every app route.
+  const path = req.originalUrl.split('?')[0];
   const started = process.hrtime.bigint();
 
   res.on('finish', () => {
@@ -13,7 +16,7 @@ export function requestContext(req: Request, res: Response, next: NextFunction):
     logger.info('request', {
       requestId: req.requestId,
       method: req.method,
-      path: req.path,
+      path,
       status: res.statusCode,
       durationMs: Math.round(ms * 10) / 10,
     });
@@ -51,7 +54,7 @@ export function errorHandler(
 
   logger.error('unhandled error', {
     requestId: req.requestId,
-    path: req.path,
+    path: req.originalUrl.split('?')[0],
     error: error instanceof Error ? error.message : String(error),
   });
 
