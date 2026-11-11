@@ -10,14 +10,27 @@ own bearer token. Responses come back as JSON because the server runs with
 1. In the app: Settings, Connect Claude, Create credential. Copy the token now; the app
    keeps only a prefix after you leave the page.
 2. In Claude: Settings, Connectors, Add custom connector. Name it Clientroom, paste the
-   endpoint, and set the header `Authorization: Bearer <token>`.
-3. Ask for something in plain words: "Using Clientroom, create a project called Northwind
-   rebrand and add three deliverables: wordmark, brand guide, social kit."
+   endpoint, click Continue.
+3. Claude may offer to sign in through OAuth. Clientroom has no OAuth server, so choose
+   "No sign in" under Authentication, then under Request headers add
+   `Authorization: Bearer <token>`. Click Add.
+4. Enable the connector in a conversation with the plus button, then ask for something in
+   plain words: "Using Clientroom, create a project called Northwind rebrand and add three
+   deliverables: wordmark, brand guide, social kit."
 
 The endpoint URL is shown on the same settings screen, so it is never guessed. The token is
 per user. Two people on one workspace would each hold their own credential and each see
 only their own projects, because the user id comes from the token, never from the request
 body.
+
+Notes for the test:
+
+- Free accounts can add one custom connector, which is enough for this.
+- The connection comes from Anthropic's cloud, not the browser, so the Railway URL has to
+  be public. It is.
+- If Claude says it cannot reach the server, check that the URL ends in `/mcp` and that
+  the `Authorization` header is set. A missing header returns 401, which is the expected
+  unauthenticated response.
 
 Requests must accept JSON, not only `text/event-stream`, if you are testing by hand:
 

@@ -12,6 +12,19 @@ Live app: https://clientroom-production.up.railway.app
 MCP endpoint: https://clientroom-production.up.railway.app/mcp
 Demo account: `demo@clientroom.app` / `clientroom-demo-2026` (a seeded sample project, labelled Sample, safe to edit)
 
+## Security notes
+
+- The demo account holds only fabricated sample data: one project with four deliverables.
+- Ownership is enforced on every read and write; the isolation test proves a second account
+  gets a 404 for another account's project. The demo account cannot read anyone else's.
+- MCP credentials are per user. The demo account has none until one is created, and any
+  credential created there is separate from a personal account's.
+- No production secret is committed: `gitleaks` finds nothing in tracked files, only an
+  ignored scratch file. Secrets live in Railway variables.
+- The demo password is seeded from `SEED_PASSWORD`. To rotate it after evaluation, update
+  that variable, delete the demo user row, and redeploy; the seed recreates the account.
+  The MCP credential can be regenerated at any time from Settings.
+
 ## The product in five steps
 
 1. Sign up with an email and a password.
