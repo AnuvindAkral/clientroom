@@ -16,6 +16,7 @@ Playwright.
 | Dependency audit | `npm audit` | 0 vulnerabilities |
 | Production container | `docker build`, `docker run` with a bind mount at `/data` | Health ok, MCP 401/405, data survived a restart |
 | Live acceptance, 44 checks | `BASE=https://clientroom-production.up.railway.app node tools/production-check.mjs` | 44 passed, 0 failed |
+| Official SDK client over HTTPS | `node tools/mcp-client-check.mjs <url> <token>` | 8 passed, 0 failed |
 | Live redeploy persistence | `railway redeploy`, then `--after-redeploy` | 5 passed, 0 failed |
 | Log hygiene | `railway logs` grep for the live token, cookies and passwords | 0 matches |
 | Real Claude connection | not run | Pending, see the last section |
@@ -105,6 +106,13 @@ Result: 44 passed, 0 failed.
 A real redeploy followed: `railway redeploy` rebuilt the image, the container restarted, and
 `--after-redeploy` signed in with the account created before the deploy, read the project,
 and found both deliverables with the edited status intact. 5 passed, 0 failed.
+
+`tools/mcp-client-check.mjs` then connected to the same endpoint with the official MCP SDK
+client and the Streamable HTTP transport, the path a real connector takes. It connected,
+listed five tools, created a project, created a deliverable with a status synonym, read
+both back, listed projects, and received an `isError` result for a missing record. 8 passed,
+0 failed. This is the strongest protocol evidence in the report, and it still is not a
+Claude account.
 
 The demo account (`demo@clientroom.app`) also signed in on the live origin and returned its
 seeded sample project with four deliverables.
