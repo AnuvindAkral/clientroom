@@ -135,3 +135,36 @@ suite does not prove a particular Claude account can reach the endpoint, because
 depends on the account's connector support, its network access to the host, and its
 handling of a bearer header. That check is reported separately and only claimed when it has
 actually been run. See [docs/07-test-report.md](07-test-report.md).
+
+## Connecting from OpenCode
+
+OpenCode can also act as an MCP client, which is useful for demonstrating the endpoint
+with a real agent when a Claude account is not available. It is not a Claude connection,
+and must not be presented as one.
+
+1. Generate a credential in the app: Settings, Connect Claude, Create credential. Copy the
+   token.
+2. Store it in an environment variable, never in a config file:
+   `export CLIENTROOM_MCP_TOKEN=crm_...`
+3. Add the server. The CLI writes it to the project config:
+   `opencode mcp add clientroom --url https://clientroom-production.up.railway.app/mcp --header 'Authorization=Bearer {env:CLIENTROOM_MCP_TOKEN}'`
+4. Open the config and set `"oauth": false` for the `clientroom` server, because
+   Clientroom has no OAuth server. The entry should look like:
+   ```jsonc
+   "clientroom": {
+     "type": "remote",
+     "url": "https://clientroom-production.up.railway.app/mcp",
+     "oauth": false,
+     "headers": { "Authorization": "Bearer {env:CLIENTROOM_MCP_TOKEN}" }
+   }
+   ```
+5. Run `opencode mcp list`. It should show `clientroom connected`.
+6. In a session, ask: "Using clientroom, list my projects" or "Create a project called
+   Northwind rebrand with three deliverables."
+
+OpenCode uses Code Mode by default, which groups tools under `tools.clientroom.*`. Set
+`"codemode": false` on the server if you want the tools on the native tool list during a
+demo.
+
+This proves the endpoint works with a real AI agent client over Streamable HTTP. It does
+not prove Claude compatibility.
