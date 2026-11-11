@@ -234,7 +234,9 @@ describe('share links', () => {
     expect(page.text).toContain('noindex');
 
     // No write method is exposed.
-    expect((await request(app).post(path)).status).toBe(404);
+    const write = await request(app).post(path);
+    expect(write.status).toBe(405);
+    expect(write.headers.allow).toBe('GET');
   });
 
   it('S6 revokes immediately and returns 410', async () => {

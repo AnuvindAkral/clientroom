@@ -1,0 +1,10 @@
+.smoke/
+.shots/
+.e2e/
+test-results/
+playwright-report/
+node_modules/
+web/dist/
+dist/
+docs/screenshots/
+tools/

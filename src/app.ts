@@ -58,6 +58,12 @@ export function createApp(): express.Express {
     res.status(status).type('html').send(html);
   });
 
+  // A client link is read only. Say so instead of falling through to a 404.
+  app.all('/s/:token', (_req, res) => {
+    res.setHeader('Allow', 'GET');
+    res.status(405).json({ error: { code: 'method_not_allowed', message: 'The client link is read only.' } });
+  });
+
   // MCP over Streamable HTTP. Stateless: one server and transport per request,
   // so no in-memory session state and no sticky routing.
   const mcpText = express.text({ type: '*/*', limit: '1mb' });
