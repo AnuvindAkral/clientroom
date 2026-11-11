@@ -145,10 +145,10 @@ Evidence: forced failure tests, log inspection.
 - [x] Railway project, service, volume at `/data`
 - [x] Environment variables set, none in git
 - [x] Public domain with valid certificate
-- [ ] Daily backup schedule enabled (requires a Pro workspace, see `05-operations.md`)
-- [ ] Manual backup taken before first production data
+- [ ] Daily backup schedule enabled (needs a Pro workspace, see `05-operations.md`)
+- [x] A copy pulled off the volume with `tools/backup.sh` and checked, 11 November 2026
 - [x] Redeploy persistence test
-- [ ] Restore rehearsal into a scratch volume
+- [x] Restore rehearsal: the deployed image booted against the copy and served the data
 
 Evidence: `docs/05-operations.md`, filled with real commands and results.
 

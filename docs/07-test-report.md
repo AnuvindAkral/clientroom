@@ -19,6 +19,8 @@ Playwright.
 | Official SDK client over HTTPS | `node tools/mcp-client-check.mjs <url> <token>` | 8 passed, 0 failed |
 | Live redeploy persistence | `railway redeploy`, then `--after-redeploy` | 5 passed, 0 failed |
 | Log hygiene | `railway logs` grep for the live token, cookies and passwords | 0 matches |
+| Backup off the volume | `tools/backup.sh` | integrity ok, 11 users, 10 projects, 17 items, 4 share links |
+| Restore rehearsal | deployed image booted against the copy, demo account signed in | Health ok, project and all four deliverables with statuses present |
 | Real Claude connection | not run | Pending, see the last section |
 
 The browser suite runs against `npm run build` output with `NODE_ENV=production`, not
@@ -129,10 +131,10 @@ cookie value, or a password.
   feature, but it was not verified.
 - **Load.** No concurrency test. The product targets a handful of users on one instance;
   SQLite serialises writes.
-- **Backup restore on Railway.** Not done. Railway answered that manual backups and backup
-  schedules require a Pro workspace, so this Hobby deployment has no platform snapshot to
-  restore. The file-level alternative is written in
-  [docs/05-operations.md](05-operations.md) but was not run, because pulling the file needs
-  an SSH key registered with Railway. Until one of those happens, the criterion is open.
+- **A scheduled backup.** None exists. Railway answered that manual backups and backup
+  schedules require a Pro workspace, so this Hobby deployment has no platform snapshot. The
+  file-level copy in [docs/05-operations.md](05-operations.md) was pulled and a restore from
+  it was rehearsed on 11 November 2026, with the results above. What is missing is anything
+  that runs without a person remembering, and the criterion stays open until that exists.
 - **Long-lived behaviour.** No soak test, no migration rehearsal from an older schema,
   because there is only one schema version so far.

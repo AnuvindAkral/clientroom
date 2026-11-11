@@ -44,8 +44,9 @@ constraint and the recovery plan are in [docs/05-operations.md](05-operations.md
 one. A few seconds, once per deploy. Acceptable for a tool a studio opens between client
 calls, not acceptable for a payment flow.
 
-**No background jobs.** Nothing is scheduled inside the app. Backups are scheduled by the
-platform, not by application code.
+**No background jobs.** Nothing is scheduled inside the app. Backups are pulled by hand with
+`tools/backup.sh` until the workspace is on a plan with a backup schedule, so the recovery
+point depends on how recently someone ran it.
 
 **Rate limiting is per process and in memory.** Twenty authentication attempts and ten
 credential operations per minute per address. One instance makes that correct; more

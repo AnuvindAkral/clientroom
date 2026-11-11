@@ -153,14 +153,22 @@ Commands were run on 11 November 2026 against the deployed service.
 | D5 | `railway redeploy`, then `node tools/production-check.mjs --after-redeploy` | 5 passed: account, project, deliverables and edited values survived |
 | D7 | `gitleaks detect`, `git ls-tree` | No secret tracked, only `.env.example`. One local scratch file flagged, untracked and ignored |
 | D8 | `railway logs` grep for the live token, cookies and passwords | 0 matches |
-| D6 | Railway backup schedule and manual backup | Blocked: backups require a Pro workspace. See the note below |
+| D6 | `tools/backup.sh`, then the deployed image booted against the copy | Restore proven from a real copy. A platform schedule still needs a Pro workspace, so D6 is only half met. See the note below |
 | R1, M12 | real Claude account | Pending. Not claimed |
 
 ### Backup status
 
 Railway answered `Manual backups and backup schedules are only available for Pro
 workspaces` for both `volumeInstanceBackupCreate` and `volumeInstanceBackupScheduleUpdate`.
-This workspace is on Hobby, so there is no platform snapshot to restore from today. The
-options are a workspace upgrade, or the file-level procedure in
-[docs/05-operations.md](../docs/05-operations.md). The criterion stays open until one of
-them is done and a restore has actually been performed.
+This workspace is on Hobby, so there is no platform snapshot.
+
+The recoverable half is done. `tools/backup.sh` pulls `clientroom.db` with its write-ahead
+log off the volume, checks it with `pragma integrity_check`, and the image built from the
+deployed commit was booted against that copy: health ok, the demo account signed in, and the
+project opened with all four deliverables and their statuses. Row counts were 11 users, 10
+projects, 17 items and 4 share links. Full transcript in
+[docs/05-operations.md](05-operations.md).
+
+The scheduled half is not done. Nothing takes a copy on its own, so the arrangement depends
+on a person running one command. That needs a Pro workspace, and the criterion stays open
+until the schedule exists.
