@@ -14,7 +14,10 @@ Playwright.
 | Backend and API tests | `npm test` | 36 passed, 0 failed |
 | Browser end-to-end | `npm run test:e2e` | 8 passed, 0 failed |
 | Dependency audit | `npm audit` | 0 vulnerabilities |
-| Manual smoke, built artefact | see below | Passed |
+| Production container | `docker build`, `docker run` with a bind mount at `/data` | Health ok, MCP 401/405, data survived a restart |
+| Live acceptance, 44 checks | `BASE=https://clientroom-production.up.railway.app node tools/production-check.mjs` | 44 passed, 0 failed |
+| Live redeploy persistence | `railway redeploy`, then `--after-redeploy` | 5 passed, 0 failed |
+| Log hygiene | `railway logs` grep for the live token, cookies and passwords | 0 matches |
 | Real Claude connection | not run | Pending, see the last section |
 
 The browser suite runs against `npm run build` output with `NODE_ENV=production`, not
@@ -80,6 +83,35 @@ asserts them.
 - **Copy.** No em dash in the interface or in the seed data, checked with grep over the
   source.
 
+## Production acceptance, 44 checks
+
+`tools/production-check.mjs` runs against the live origin with no local state. It creates
+its own account, project, deliverables, client link and MCP credential, then checks:
+
+- HTTPS, health, the app shell, an unauthenticated MCP request (401) and `GET /mcp` (405).
+- Signup, session cookie flags, short password, duplicate email, foreign origin write.
+- Project and deliverable create, edit, status normalisation, rejected values, delete.
+- Client link creation, the page in a fresh request with no cookie, the internal note and
+  email absent, a write rejected with 405 and `Allow: GET`, revocation returning 410, an
+  unknown token returning 404.
+- A second account receiving 404 for the first account's project and an empty list.
+- Credential reveal once, then only a prefix on later reads.
+- `initialize`, `tools/list` returning exactly five tools, all five tools working,
+  `-32602` for bad arguments, `-32601` for an unknown method, `isError` for a missing
+  record, and the old token returning 401 after regeneration.
+
+Result: 44 passed, 0 failed.
+
+A real redeploy followed: `railway redeploy` rebuilt the image, the container restarted, and
+`--after-redeploy` signed in with the account created before the deploy, read the project,
+and found both deliverables with the edited status intact. 5 passed, 0 failed.
+
+The demo account (`demo@clientroom.app`) also signed in on the live origin and returned its
+seeded sample project with four deliverables.
+
+The request log was checked after the run: zero matches for the live MCP token, any session
+cookie value, or a password.
+
 ## What this does not prove
 
 - **A real Claude account reaching the endpoint.** Not tested. The protocol tests prove the
@@ -89,8 +121,10 @@ asserts them.
   feature, but it was not verified.
 - **Load.** No concurrency test. The product targets a handful of users on one instance;
   SQLite serialises writes.
-- **Backup restore on Railway.** The procedure is written and the native backup schedule is
-  configured; the restore rehearsal is recorded only once it has been performed on the
-  deployed service. Until then this line reads pending, not done.
+- **Backup restore on Railway.** Not done. Railway answered that manual backups and backup
+  schedules require a Pro workspace, so this Hobby deployment has no platform snapshot to
+  restore. The file-level alternative is written in
+  [docs/05-operations.md](05-operations.md) but was not run, because pulling the file needs
+  an SSH key registered with Railway. Until one of those happens, the criterion is open.
 - **Long-lived behaviour.** No soak test, no migration rehearsal from an older schema,
   because there is only one schema version so far.

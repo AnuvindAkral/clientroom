@@ -3,6 +3,10 @@
 How Clientroom is deployed, backed up, restored and diagnosed. Written so someone who did
 not build it can run it.
 
+Current deployment: Railway project `clientroom`, service `clientroom`, volume
+`clientroom-volume` mounted at `/data`, public origin
+`https://clientroom-production.up.railway.app`.
+
 ## Environment
 
 | Variable | Required | Value in production |
@@ -51,26 +55,54 @@ networked database first, which is a deliberate product decision recorded in
 
 ## Backups
 
-Railway's native volume backups are enabled on the service: a daily backup with six day
-retention, plus weekly and monthly schedules kept longer. The backup is a copy of the
-whole volume, so it includes the SQLite file and its write-ahead log at a consistent
-point.
+Railway's volume backups (manual snapshots and daily, weekly or monthly schedules) are a
+Pro workspace feature. On this Hobby workspace the API answers `Manual backups and backup
+schedules are only available for Pro workspaces`, so there is no platform snapshot today.
+Two options, in order of preference:
 
-Take one by hand before anything risky: service, volume, create backup. Note the
-timestamp; the restore step needs it.
+**1. Upgrade the workspace to Pro, then enable the schedule.** No application change. Set
+the schedule to daily, take one manual backup, and restore it into a scratch service once
+to prove it works. That is the only version of this that needs no human memory.
 
-A restore is done into a new service, never over the live volume:
+**2. File-level backup, on demand.** Works on Hobby. It needs an unencrypted SSH key
+registered with Railway, because volume file access goes over SSH and the agent cannot
+type a passphrase:
 
-1. Create a temporary service in the same project.
-2. Attach a fresh volume to it.
-3. Restore the chosen backup into that volume.
-4. Start the old image against it and open `/healthz`.
-5. Read a project in the app to confirm the data is the expected one.
-6. If it is, point the real service at the restored volume or copy the file across; if it
-   is not, delete the scratch service and try another backup.
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/clientroom_backup -N '' -C 'railway volume backup'
+railway ssh keys add --key ~/.ssh/clientroom_backup
 
-The rehearsal for this deployment is recorded in
-[docs/07-test-report.md](07-test-report.md). Rehearse it again whenever the schema changes.
+VOLUME=6e885ba4-9d8e-497d-871b-34ca491e267b
+railway volume files --volume $VOLUME download /data/clientroom.db     backup/clientroom.db
+railway volume files --volume $VOLUME download /data/clientroom.db-wal backup/clientroom.db-wal
+railway volume files --volume $VOLUME download /data/clientroom.db-shm backup/clientroom.db-shm
+```
+
+Download all three files. The database runs in WAL mode, so the main file alone can be
+missing the most recent writes; the write-ahead log is part of the backup. Verify the copy
+before trusting it:
+
+```bash
+sqlite3 backup/clientroom.db 'pragma integrity_check; select count(*) from projects; select count(*) from items;'
+```
+
+Then boot the same image against the copy to prove the application reads it:
+`docker run -p 4321:3000 -v "$PWD/backup:/data" -e DATABASE_PATH=/data/clientroom.db ...`
+and open `/healthz` plus a sign in.
+
+Restoring:
+
+1. Stop the service so nothing writes during the copy.
+2. `railway volume files --volume $VOLUME upload backup/clientroom.db /data/clientroom.db`
+   and the `-wal` file with it. Delete the stale `-shm` if the copy has none.
+3. Start the service, open `/healthz`, then sign in and read a project.
+4. If the data is wrong, restore the previous copy.
+
+Neither option has been rehearsed on this deployment yet. The traceability matrix records
+that as open rather than done.
+
+A backup on the same volume is not a backup against losing the volume. That is why the
+schedule on Pro, or a copy pulled off the platform, is worth the money.
 
 ## Logs and what they must never contain
 

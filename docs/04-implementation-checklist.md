@@ -142,12 +142,12 @@ Evidence: forced failure tests, log inspection.
 ## 11. Production deployment
 
 - [x] Dockerfile builds locally
-- [ ] Railway project, service, volume at `/data`
-- [ ] Environment variables set, none in git
-- [ ] Public domain with valid certificate
-- [ ] Daily backup schedule enabled
+- [x] Railway project, service, volume at `/data`
+- [x] Environment variables set, none in git
+- [x] Public domain with valid certificate
+- [ ] Daily backup schedule enabled (requires a Pro workspace, see `05-operations.md`)
 - [ ] Manual backup taken before first production data
-- [ ] Redeploy persistence test
+- [x] Redeploy persistence test
 - [ ] Restore rehearsal into a scratch volume
 
 Evidence: `docs/05-operations.md`, filled with real commands and results.

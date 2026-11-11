@@ -8,9 +8,9 @@ Clientroom with a token and ask for the same work in a sentence. The app itself 
 model in it: no SDK, no API key, no outbound inference call. Claude is a second way to
 reach the same database, not a feature of the product.
 
-Live app: [pending deploy]
-MCP endpoint: [pending deploy]/mcp
-Demo account: [pending deploy]
+Live app: https://clientroom-production.up.railway.app
+MCP endpoint: https://clientroom-production.up.railway.app/mcp
+Demo account: `demo@clientroom.app` / `clientroom-demo-2026` (a seeded sample project, labelled Sample, safe to edit)
 
 ## The product in five steps
 
@@ -115,8 +115,13 @@ records what was run and what was not.
 
 Railway, one service, one volume at `/data`, environment variables for secrets
 (`DATABASE_PATH`, `SESSION_SECRET`, `APP_ORIGIN`, `NODE_ENV`, and the optional seed
-values). The full runbook, including the restore rehearsal, is in
-[docs/05-operations.md](docs/05-operations.md).
+values). The full runbook, including the backup and restore procedure and the
+single-instance constraint, is in [docs/05-operations.md](docs/05-operations.md).
+
+Deployed at `https://clientroom-production.up.railway.app` with the service `clientroom`,
+the volume `clientroom-volume` mounted at `/data`, and a Let's Encrypt certificate. The
+production acceptance run and the redeploy persistence check are recorded in
+[docs/07-test-report.md](docs/07-test-report.md).
 
 ## What it does not do
 

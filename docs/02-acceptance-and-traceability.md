@@ -121,32 +121,46 @@ test, **E** browser end-to-end test, **D** deployment check, **R** manual read.
 
 | Assignment requirement | Product capability | Where it lives | Criterion | Status |
 |---|---|---|---|---|
-| Work from Claude | Five MCP tools create and update real records | `POST /mcp`, `src/mcp/server.ts` | R1, M4 | Built, protocol verified |
-| A person can edit it | Inline editing of projects and deliverables | `/projects/:id` | R2, P3-P5 | Built, tested |
-| Live on the internet | Railway service plus volume, public HTTPS | Railway | R3, D1-D5 | Pending deploy |
+| Work from Claude | Five MCP tools create and update real records | `POST /mcp`, `src/mcp/server.ts` | R1, M4 | Built. Protocol verified in production. A live Claude account is not tested |
+| A person can edit it | Inline editing of projects and deliverables | `/projects/:id` | R2, P3-P5 | Built, verified in production |
+| Live on the internet | Railway service plus volume, public HTTPS | https://clientroom-production.up.railway.app | R3, D1-D5 | Live |
 | No AI inside the app | No model dependency, no inference call | dependency audit | R4 | Verified |
 | Not a website builder | No builder primitives | out-of-scope list | X1 | By design |
 | Not an online shop | No commerce primitives | out-of-scope list | X2 | By design |
 | Keep the product small | One workflow, five tools, six screens | this document | X3 | By design |
-| Live app URL | Public origin | README and handover | D1 | Pending deploy |
-| Test credentials | Demo account | README and handover | A1 | Pending deploy |
-| MCP URL and instructions | Connection screen plus reference | `/settings/claude`, `docs/06` | M10, D3 | Built |
-| Five-minute pitch | Script and recording | `docs/demo-script.md` | deliverable | Script done, recording pending |
-| Independent verification | MCP test suite with SDK client | `tests/mcp.test.ts` | M1-M11 | Built, 36 tests pass |
+| Live app URL | Public origin | README | D1 | Live |
+| Test credentials | Demo account | README | A1 | Live and verified |
+| MCP URL and instructions | Connection screen plus reference | `/settings/claude`, `docs/06` | M10, D3 | Live |
+| Five-minute pitch | Script and recording | `docs/demo-script.md` | deliverable | Script done, recording not made |
+| Independent verification | Production acceptance script | `tools/production-check.mjs` | M1-M11, D1-D5 | 44 of 44 checks pass on the live origin |
 
 ## 10. Evidence log
 
-Every entry is a command that was run and its result on 11 November 2026.
+Commands were run on 11 November 2026 against the deployed service.
 
 | Criterion | Command | Result |
 |---|---|---|
 | A1-A9, P1-P10, S1-S9, C1-C4 | `npm test` | 36 tests passed, 0 failed |
 | M1-M9, C3, C6 | `npm test` (MCP suite) | Included in the 36, no failures |
-| M11 | `npm audit` | 0 vulnerabilities, no model SDK in the tree |
 | Q1-Q7, E1-E12 | `npm run test:e2e` | 8 tests passed, axe clean on five screens, no horizontal scroll at 360/768/1280/1600 |
-| D5 | stop and start against the same file | Projects and deliverables present after restart |
-| Build | `npm run build` | Clean, JS 78.4 kB gzipped |
-| Types | `npm run typecheck` | Clean |
-| R4, X1-X3 | source and dependency read | No model call, no builder or commerce primitive |
-| D1-D6, D7-D8 | Railway | Pending: recorded after the deploy |
-| R1 | real Claude account | Pending: recorded only when run |
+| Types and build | `npm run typecheck`, `npm run build` | Clean, JS 78.4 kB gzipped |
+| R4, X1-X3 | source and dependency read, `npm audit` | No model SDK, no builder or commerce primitive, 0 vulnerabilities |
+| D1 | `curl https://clientroom-production.up.railway.app/` | 200, app shell served |
+| D1 | `openssl s_client` | Let's Encrypt certificate, valid to 26 December 2026 |
+| D2 | `curl /healthz` | 200 `{"status":"ok","database":"ok"}` |
+| D3, D4 | `railway volume list --json` | One volume, mountPath `/data`, attached to `clientroom` |
+| D3, M10 | `BASE=... node tools/production-check.mjs` | 44 passed, 0 failed, including MCP over HTTPS |
+| D5 | `railway redeploy`, then `node tools/production-check.mjs --after-redeploy` | 5 passed: account, project, deliverables and edited values survived |
+| D7 | `gitleaks detect`, `git ls-tree` | No secret tracked, only `.env.example`. One local scratch file flagged, untracked and ignored |
+| D8 | `railway logs` grep for the live token, cookies and passwords | 0 matches |
+| D6 | Railway backup schedule and manual backup | Blocked: backups require a Pro workspace. See the note below |
+| R1, M12 | real Claude account | Pending. Not claimed |
+
+### Backup status
+
+Railway answered `Manual backups and backup schedules are only available for Pro
+workspaces` for both `volumeInstanceBackupCreate` and `volumeInstanceBackupScheduleUpdate`.
+This workspace is on Hobby, so there is no platform snapshot to restore from today. The
+options are a workspace upgrade, or the file-level procedure in
+[docs/05-operations.md](../docs/05-operations.md). The criterion stays open until one of
+them is done and a restore has actually been performed.

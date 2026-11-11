@@ -1,9 +1,9 @@
 {
-  "email": "acceptance.1794382639953@clientroom.test",
+  "email": "acceptance.1794382879172@clientroom.test",
   "password": "acceptance-test-pass",
-  "projectId": "386a323f-7d26-4ce7-83f4-9c45414a0d39",
-  "mcpProjectId": "91a5b086-d302-410e-aad3-0b80597483dc",
-  "itemId": "0d704c56-9442-4aa5-8b4e-57298fce1342",
-  "newToken": "crm_HFs16L5cMXFN3ZDhbKd6EcHe8cOSDosytmxno3chqTA",
-  "at": "2026-11-11T07:37:30.528Z"
+  "projectId": "50d1ab75-214e-42ab-ae6e-da1616d52a68",
+  "mcpProjectId": "c0b1f0b4-d8ae-45de-8a17-a9f0d0e45970",
+  "itemId": "de44ff38-e3b2-47be-b20b-5da94bdc97a4",
+  "newToken": "crm_NFD7P8gkpfS6tTgDJhNaV4JsVfoXcfloBZgxq6--AGU",
+  "at": "2026-11-11T07:41:30.784Z"
 }
